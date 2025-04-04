@@ -1,36 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Information Theory Calculator</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 20px auto; padding: 20px; }
-        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .input-section, .output-section { border: 1px solid #ccc; padding: 15px; border-radius: 8px; }
-        textarea { width: 100%; height: 150px; margin: 10px 0; }
-        button { padding: 8px 16px; margin: 5px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .error { color: red; margin: 10px 0; }
-        .result { margin: 15px 0; }
-        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #45a049;
+            --error-color: #f44336;
+            --border-color: #ddd;
+            --bg-color: #f9f9f9;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            height: 100%;
+        }
+
+        .input-section h3,
+        .output-section h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: 500;
+        }
+
+        textarea,
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            resize: vertical;
+        }
+
+        textarea {
+            min-height: 100px;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        button {
+            padding: 10px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .error {
+            color: var(--error-color);
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #ffebee;
+            border-radius: 4px;
+        }
+
+        .result {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: var(--bg-color);
+            border-radius: 4px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.9em;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--bg-color);
+        }
+
+        .steps {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            border-left: 4px solid #6c757d;
+        }
+
+        .step {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #dee2e6;
+        }
+
+        .step:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .formula {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #e9ecef;
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: #d63384;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .toggle-steps {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            text-decoration: underline;
+            cursor: pointer;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        @media (max-width: 600px) {
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
     </style>
 </head>
+
 <body>
-    <h1>Information Theory Calculator</h1>
     <div class="container">
-        <div class="input-section">
+        <div class="panel input-section">
             <h3>Input Data</h3>
             <label>Source Distribution P (JSON array):</label>
-            <textarea id="sourceDist" placeholder="[0.04, 0.115, ...]"></textarea>
-            
+            <textarea id="sourceDist"
+                placeholder="[0.04, 0.115, ...]">[0.04,0.115,0.016,0.185,0.013,0.052,0.005,0.057,0.004,0.001,0.195,0.06,0.015,0.036,0.004,0.01,0.012,0.041,0.04,0.099]</textarea>
+
             <label>Joint Distribution Matrix (2D JSON array):</label>
-            <textarea id="jointMatrix" placeholder="[[0.040, 0.013, ...], [...]]"></textarea>
-            
-            <div>
-                <button onclick="calculateEntropy()">1. Calculate Entropy</button>
+            <textarea id="jointMatrix"
+                placeholder="[[0.040, 0.013, ...], [...]]">[[0.040,0.013,0.004,0.015,0.012],[0.115,0.052,0.001,0.036,0.041],[0.016,0.005,0.195,0.004,0.040],[0.185,0.057,0.060,0.010,0.099]]</textarea>
+
+            <div class="button-group">
+                <button onclick="calculateEntropy()">1. Entropy</button>
                 <button onclick="calculateBinaryHuffman()">2. Binary Huffman</button>
                 <button onclick="calculateTernaryHuffman()">3. Ternary Huffman</button>
-                <button onclick="calculateTernaryShannonFano()">4. Ternary Shannon-Fano</button>
+                <button onclick="calculateTernaryShannonFano()">4. Shannon-Fano</button>
                 <button onclick="calculateGilbertMoore()">5. Gilbert-Moore</button>
                 <button onclick="calculateJointEntropy()">6. Joint Entropy</button>
                 <button onclick="calculateMarginalEntropies()">7. Marginal Entropies</button>
@@ -39,327 +227,528 @@
             </div>
             <div class="error" id="errorMessage"></div>
         </div>
-        
-        <div class="output-section">
+
+        <div class="panel output-section">
             <h3>Results</h3>
             <div id="results"></div>
         </div>
     </div>
 
-<script>
-class InformationTheory {
-    static validateProbabilities(prob) {
-        if (!Array.isArray(prob)) throw new Error("Invalid input format");
-        const sum = prob.reduce((a, b) => a + b, 0);
-        if (Math.abs(sum - 1) > 0.001) throw new Error(`Probabilities sum to ${sum.toFixed(3)} instead of 1`);
-        if (prob.some(p => p < 0 || p > 1)) throw new Error("Probabilities must be between 0 and 1");
-    }
-
-    static entropy(probabilities) {
-        this.validateProbabilities(probabilities);
-        return probabilities.reduce((sum, p) => p > 0 ? sum - p * Math.log2(p) : sum, 0);
-    }
-
-    static huffmanCode(probabilities) {
-        this.validateProbabilities(probabilities);
-        const nodes = probabilities.map(p => ({p, code: ''}));
-        const tree = [...nodes];
-        
-        while (tree.length > 1) {
-            tree.sort((a, b) => a.p - b.p);
-            const [a, b] = tree.splice(0, 2);
-            tree.push({p: a.p + b.p, children: [a, b]});
-        }
-
-        const codes = {};
-        function traverse(node, code = '') {
-            if (node.children) {
-                traverse(node.children[0], code + '0');
-                traverse(node.children[1], code + '1');
-            } else {
-                codes[node.p] = code;
+    <script>
+        class InformationTheory {
+            static validateProbabilities(prob) {
+                if (!Array.isArray(prob)) throw new Error("Invalid input format");
+                const sum = prob.reduce((a, b) => a + b, 0);
+                if (Math.abs(sum - 1) > 0.001) throw new Error(`Probabilities sum to ${sum.toFixed(3)} instead of 1`);
+                if (prob.some(p => p < 0 || p > 1)) throw new Error("Probabilities must be between 0 and 1");
             }
-        }
-        traverse(tree[0]);
 
-        const expectedLength = probabilities.reduce((sum, p) => sum + p * codes[p].length, 0);
-        return {codes, expectedLength};
-    }
+            static entropy(probabilities) {
+                this.validateProbabilities(probabilities);
+                let steps = ["<strong>Entropy Calculation Steps:</strong>"];
+                steps.push("Formula: <span class='formula'>H(X) = -Σ p(x) log₂ p(x)</span>");
 
-    static ternaryHuffman(probabilities) {
-        this.validateProbabilities(probabilities);
-        let nodes = probabilities.map(p => ({p, code: ''}));
-        
-        while (nodes.length > 1) {
-            nodes.sort((a, b) => a.p - b.p);
-            if (nodes.length % 2 === 0) nodes.push({p: 0});
-            const group = nodes.splice(0, 3);
-            nodes.push({
-                p: group.reduce((sum, n) => sum + n.p, 0),
-                children: group
-            });
-        }
+                const result = probabilities.reduce((sum, p, i) => {
+                    if (p > 0) {
+                        const term = -p * Math.log2(p);
+                        steps.push(`Step ${i + 1}: p(x${i + 1}) = ${p.toFixed(4)}, term = -${p.toFixed(4)} × log₂(${p.toFixed(4)}) = ${term.toFixed(4)}`);
+                        return sum + term;
+                    }
+                    return sum;
+                }, 0);
 
-        const codes = {};
-        function traverse(node, code = '') {
-            if (node.children) {
-                node.children.forEach((child, i) => {
-                    if (child.p > 0) traverse(child, code + i);
+                steps.push(`<strong>Final Entropy:</strong> H(X) = ${result.toFixed(4)} bits`);
+                return { result, steps };
+            }
+
+            static huffmanCode(probabilities) {
+                this.validateProbabilities(probabilities);
+                let steps = ["<strong>Binary Huffman Coding Steps:</strong>"];
+                steps.push("1. Start with each symbol as a leaf node with its probability");
+
+                const nodes = probabilities.map((p, i) => ({ symbol: `x${i + 1}`, p, code: '' }));
+                const tree = [...nodes];
+                steps.push("Initial nodes: " + nodes.map(n => `${n.symbol}: ${n.p.toFixed(4)}`).join(", "));
+
+                let stepCount = 2;
+                while (tree.length > 1) {
+                    tree.sort((a, b) => a.p - b.p);
+                    const [a, b] = tree.splice(0, 2);
+                    const newNode = {
+                        symbol: `${a.symbol}+${b.symbol}`,
+                        p: a.p + b.p,
+                        children: [a, b]
+                    };
+                    tree.push(newNode);
+                    steps.push(`${stepCount++}. Combine ${a.symbol} (${a.p.toFixed(4)}) and ${b.symbol} (${b.p.toFixed(4)}) → new node ${newNode.symbol} (${newNode.p.toFixed(4)})`);
+                }
+
+                const codes = {};
+                function traverse(node, code = '') {
+                    if (node.children) {
+                        traverse(node.children[0], code + '0');
+                        traverse(node.children[1], code + '1');
+                    } else {
+                        codes[node.symbol] = code;
+                    }
+                }
+                traverse(tree[0]);
+
+                steps.push("<strong>Code Assignment:</strong> (0 to left child, 1 to right child)");
+                for (const sym in codes) {
+                    steps.push(`${sym}: ${codes[sym]}`);
+                }
+
+                const expectedLength = probabilities.reduce((sum, _, i) => sum + nodes[i].p * codes[`x${i + 1}`].length, 0);
+                steps.push(`<strong>Expected Length:</strong> L = Σ p(x)l(x) = ${expectedLength.toFixed(4)} bits`);
+
+                return { codes, expectedLength, steps };
+            }
+
+         static ternaryHuffman(probabilities) {
+                this.validateProbabilities(probabilities);
+                let nodes = probabilities.map((p, i) => ({ symbol: `x${i + 1}`, p, code: '' }));
+                const steps = []; // To store execution steps
+
+                while (nodes.length > 1) {
+                    // Sort nodes by probability
+                    nodes.sort((a, b) => a.p - b.p);
+
+                    // Log the current state of nodes
+                    steps.push(`Nodes before grouping: ${JSON.stringify(nodes.map(n => `${n.symbol}: ${n.p.toFixed(4)}`))}`);
+
+                    // Ensure there are at least 3 nodes for grouping; add dummy nodes if needed
+                    if (nodes.length % 2 === 0) {
+                        nodes.push({ symbol: 'dummy', p: 0 }); // Add a dummy node with probability 0
+                        steps.push("Added dummy node (p=0) to make groups of three");
+                    }
+
+                    // Group the first 3 nodes
+                    const group = nodes.splice(0, 3);
+                    const groupSum = group.reduce((sum, n) => sum + n.p, 0);
+
+                    // Create a new parent node
+                    const parentNode = {
+                        symbol: `(${group.map(n => n.symbol).join('+')})`,
+                        p: groupSum,
+                        children: group
+                    };
+
+                    // Log the grouping step
+                    steps.push(`Grouped probabilities: ${group.map(n => `${n.symbol}: ${n.p.toFixed(4)}`).join(', ')} into parent node ${parentNode.symbol} (${groupSum.toFixed(4)})`);
+
+                    // Add the parent node back to the list
+                    nodes.push(parentNode);
+                }
+
+                // Generate Huffman codes
+                const codes = {};
+                function traverse(node, code = '') {
+                    if (node.children) {
+                        node.children.forEach((child, i) => {
+                            if (child.p > 0 || child.symbol === 'dummy') traverse(child, code + i); // Assign codes only to non-dummy nodes
+                        });
+                    } else if (node.p > 0) {
+                        codes[node.symbol] = code; // Map symbol to its code
+                    }
+                }
+                traverse(nodes[0]);
+
+                // Calculate expected length
+                const expectedLength = probabilities.reduce((sum, p, i) => sum + p * codes[`x${i + 1}`].length, 0);
+
+                // Return results
+                return { codes, expectedLength, steps };
+            }
+            static shannonFanoTernary(probabilities) {
+                this.validateProbabilities(probabilities);
+                let steps = ["<strong>Ternary Shannon-Fano Coding Steps:</strong>"];
+                steps.push("1. Sort probabilities in descending order");
+
+                const sorted = [...probabilities].sort((a, b) => b - a).map((p, i) => ({ symbol: `x${i + 1}`, p }));
+                steps.push("Sorted probabilities: " + sorted.map(n => `${n.symbol}: ${n.p.toFixed(4)}`).join(", "));
+
+                const codes = {};
+
+                function split(symbols, code) {
+                    if (symbols.length <= 1) {
+                        if (symbols.length === 1) {
+                            codes[symbols[0].symbol] = code;
+                            steps.push(`Assign code ${code} to ${symbols[0].symbol} (${symbols[0].p.toFixed(4)})`);
+                        }
+                        return;
+                    }
+
+                    const total = symbols.reduce((sum, s) => sum + s.p, 0);
+                    const target = total / 3;
+                    let group1 = [], group2 = [], group3 = [];
+                    let sum1 = 0, sum2 = 0, sum3 = 0;
+
+                    // Improved grouping algorithm
+                    for (const s of symbols) {
+                        if (sum1 + s.p <= target * 1.2 || group1.length === 0) {
+                            group1.push(s);
+                            sum1 += s.p;
+                        } else if (sum2 + s.p <= target * 1.2 || group2.length === 0) {
+                            group2.push(s);
+                            sum2 += s.p;
+                        } else {
+                            group3.push(s);
+                            sum3 += s.p;
+                        }
+                    }
+
+                    steps.push(`Split into groups:`);
+                    steps.push(`- Group 0 (sum=${sum1.toFixed(4)}): ${group1.map(s => s.symbol).join(', ')}`);
+                    steps.push(`- Group 1 (sum=${sum2.toFixed(4)}): ${group2.map(s => s.symbol).join(', ')}`);
+                    steps.push(`- Group 2 (sum=${sum3.toFixed(4)}): ${group3.map(s => s.symbol).join(', ')}`);
+
+                    split(group1, code + '0');
+                    split(group2, code + '1');
+                    split(group3, code + '2');
+                }
+
+                split(sorted, '');
+
+                const expectedLength = probabilities.reduce((sum, _, i) => {
+                    const sym = `x${i + 1}`;
+                    return sum + sorted.find(s => s.symbol === sym).p * codes[sym].length;
+                }, 0);
+
+                steps.push(`<strong>Expected Length:</strong> L = Σ p(x)l(x) = ${expectedLength.toFixed(4)} ternary digits`);
+
+                return { codes, expectedLength, steps };
+            }
+
+            static gilbertMoore(probabilities) {
+                this.validateProbabilities(probabilities);
+                let steps = ["<strong>Gilbert-Moore Coding Steps:</strong>"];
+                steps.push("1. Sort probabilities in descending order");
+
+                const sorted = [...probabilities].sort((a, b) => b - a).map((p, i) => ({ symbol: `x${i + 1}`, p }));
+                steps.push("Sorted probabilities: " + sorted.map(n => `${n.symbol}: ${n.p.toFixed(4)}`).join(", "));
+
+                const codes = {};
+                let cumulative = 0;
+
+                steps.push("2. Calculate codes using cumulative probabilities:");
+
+                sorted.forEach(({ symbol, p }) => {
+                    const length = Math.ceil(-Math.log2(p)) + 1;
+                    const binary = (cumulative * (2 ** length)).toString(2).slice(0, length).padStart(length, '0');
+                    codes[symbol] = binary;
+
+                    steps.push(`- ${symbol} (p=${p.toFixed(4)}):`);
+                    steps.push(`  Length: ⌈-log₂(${p.toFixed(4)})⌉ + 1 = ${length}`);
+                    steps.push(`  Cumulative: ${cumulative.toFixed(4)} → ${cumulative.toFixed(4)} × 2^${length} = ${(cumulative * (2 ** length)).toFixed(4)}`);
+                    steps.push(`  Binary: ${binary}`);
+
+                    cumulative += p;
                 });
-            } else if (node.p > 0) {
-                codes[node.p] = code;
+
+                const expectedLength = probabilities.reduce((sum, _, i) => {
+                    const sym = `x${i + 1}`;
+                    return sum + sorted.find(s => s.symbol === sym).p * codes[sym].length;
+                }, 0);
+
+                steps.push(`<strong>Expected Length:</strong> L = Σ p(x)l(x) = ${expectedLength.toFixed(4)} bits`);
+
+                return { codes, expectedLength, steps };
+            }
+
+            static jointEntropy(matrix) {
+                const flat = matrix.flat();
+                this.validateProbabilities(flat);
+                let steps = ["<strong>Joint Entropy Calculation Steps:</strong>"];
+                steps.push("Formula: <span class='formula'>H(X,Y) = -Σ p(x,y) log₂ p(x,y)</span>");
+
+                const result = flat.reduce((sum, p, i) => {
+                    if (p > 0) {
+                        const x = Math.floor(i / matrix[0].length) + 1;
+                        const y = (i % matrix[0].length) + 1;
+                        const term = -p * Math.log2(p);
+                        steps.push(`p(x${x},y${y}) = ${p.toFixed(4)}, term = -${p.toFixed(4)} × log₂(${p.toFixed(4)}) = ${term.toFixed(4)}`);
+                        return sum + term;
+                    }
+                    return sum;
+                }, 0);
+
+                steps.push(`<strong>Final Joint Entropy:</strong> H(X,Y) = ${result.toFixed(4)} bits`);
+                return { result, steps };
+            }
+
+            static marginalEntropies(matrix) {
+                const px = matrix.map(row => row.reduce((a, b) => a + b));
+                const py = matrix[0].map((_, i) => matrix.reduce((a, row) => a + row[i], 0));
+
+                let steps = ["<strong>Marginal Entropies Calculation Steps:</strong>"];
+                steps.push("Formula: <span class='formula'>H(X) = -Σ p(x) log₂ p(x)</span> and <span class='formula'>H(Y) = -Σ p(y) log₂ p(y)</span>");
+
+                steps.push("<strong>Marginal Distribution p(x):</strong>");
+                px.forEach((p, i) => {
+                    steps.push(`p(x${i + 1}) = ${p.toFixed(4)}`);
+                });
+
+                steps.push("<strong>Marginal Distribution p(y):</strong>");
+                py.forEach((p, i) => {
+                    steps.push(`p(y${i + 1}) = ${p.toFixed(4)}`);
+                });
+
+                const Hx = this.entropy(px).result;
+                const Hy = this.entropy(py).result;
+
+                steps.push(`<strong>Marginal Entropy H(X):</strong> ${Hx.toFixed(4)} bits`);
+                steps.push(`<strong>Marginal Entropy H(Y):</strong> ${Hy.toFixed(4)} bits`);
+
+                return { Hx, Hy, steps };
+            }
+
+            static conditionalEntropies(matrix) {
+                const { Hx, Hy, steps: marginSteps } = this.marginalEntropies(matrix);
+                let steps = marginSteps;
+                steps.push("<br><strong>Conditional Entropies Calculation Steps:</strong>");
+
+                const px = matrix.map(row => row.reduce((a, b) => a + b));
+                const py = matrix[0].map((_, i) => matrix.reduce((a, row) => a + row[i], 0));
+
+                steps.push("Formula: <span class='formula'>H(Y|X) = Σ p(x) H(Y|X=x)</span>");
+
+                const Hyx = matrix.reduce((sum, row, i) => {
+                    const rowSum = px[i];
+                    const condProbs = row.map(p => p / rowSum);
+                    const condEntropy = this.entropy(condProbs).result;
+                    steps.push(`H(Y|X=x${i + 1}) = ${condEntropy.toFixed(4)} (for row ${i + 1})`);
+                    return sum + rowSum * condEntropy;
+                }, 0);
+
+                steps.push(`<strong>Conditional Entropy H(Y|X):</strong> ${Hyx.toFixed(4)} bits`);
+
+                steps.push("<br>Formula: <span class='formula'>H(X|Y) = Σ p(y) H(X|Y=y)</span>");
+
+                const Hxy = matrix[0].map((_, j) => {
+                    const col = matrix.map(row => row[j]);
+                    const colSum = py[j];
+                    const condProbs = col.map(p => p / colSum);
+                    const condEntropy = this.entropy(condProbs).result;
+                    steps.push(`H(X|Y=y${j + 1}) = ${condEntropy.toFixed(4)} (for column ${j + 1})`);
+                    return colSum * condEntropy;
+                }).reduce((a, b) => a + b, 0);
+
+                steps.push(`<strong>Conditional Entropy H(X|Y):</strong> ${Hxy.toFixed(4)} bits`);
+
+                return { Hyx, Hxy, steps };
+            }
+
+            static mutualInformation(matrix) {
+                const { Hx, Hy } = this.marginalEntropies(matrix);
+                const Hxy = this.jointEntropy(matrix).result;
+
+                let steps = ["<strong>Mutual Information Calculation Steps:</strong>"];
+                steps.push("Formula: <span class='formula'>I(X;Y) = H(X) + H(Y) - H(X,Y)</span>");
+                steps.push(`H(X) = ${Hx.toFixed(4)} bits`);
+                steps.push(`H(Y) = ${Hy.toFixed(4)} bits`);
+                steps.push(`H(X,Y) = ${Hxy.toFixed(4)} bits`);
+
+                const result = Hx + Hy - Hxy;
+                steps.push(`<strong>Mutual Information:</strong> I(X;Y) = ${Hx.toFixed(4)} + ${Hy.toFixed(4)} - ${Hxy.toFixed(4)} = ${result.toFixed(4)} bits`);
+
+                return { result, steps };
             }
         }
-        traverse(nodes[0]);
 
-        const expectedLength = probabilities.reduce((sum, p) => sum + p * codes[p].length, 0);
-        return {codes, expectedLength};
-    }
-
-    // Problem 4: Ternary Shannon-Fano (Fixed Version)
-static shannonFanoTernary(probabilities) {
-    this.validateProbabilities(probabilities);
-    const sorted = [...probabilities].sort((a, b) => b - a);
-    const codes = {};
-
-    function split(symbols, code) {
-        if (symbols.length <= 1) {
-            if (symbols.length === 1) codes[symbols[0]] = code;
-            return;
+        // UI Functions
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            setTimeout(() => {
+                document.getElementById('errorMessage').textContent = '';
+            }, 5000);
         }
 
-        const total = symbols.reduce((sum, p) => sum + p, 0);
-        const target = total / 3;
-        let group1 = [], group2 = [], group3 = [];
-        let sum1 = 0, sum2 = 0, sum3 = 0;
-
-        // Improved grouping algorithm
-        for (const p of symbols) {
-            if (sum1 + p <= target * 1.2 || group1.length === 0) {
-                group1.push(p);
-                sum1 += p;
-            } else if (sum2 + p <= target * 1.2 || group2.length === 0) {
-                group2.push(p);
-                sum2 += p;
-            } else {
-                group3.push(p);
-                sum3 += p;
+        function parseInput(id) {
+            try {
+                const input = document.getElementById(id).value;
+                return JSON.parse(input);
+            } catch (e) {
+                showError(`Invalid ${id} format: ${e.message}`);
+                return null;
             }
         }
 
-        // Ensure all groups have at least one element
-        if (group3.length === 0) {
-            group3 = group2.splice(group2.length-1);
-            sum3 = group3[0];
-            sum2 -= sum3;
+        function toggleSteps(stepId) {
+            const steps = document.getElementById(stepId);
+            steps.style.display = steps.style.display === 'none' ? 'block' : 'none';
         }
 
-        split(group1, code + '0');
-        split(group2, code + '1');
-        split(group3, code + '2');
+        function createCodeTable(codes, expectedLength, isTernary = false) {
+            let html = '<table><tr><th>Symbol</th><th>Code</th><th>Length</th></tr>';
+            Object.entries(codes).forEach(([symbol, code]) => {
+                if (!symbol.includes('dummy')) {
+                    html += `<tr><td>${symbol}</td><td>${code}</td><td>${code.length}</td></tr>`;
+                }
+            });
+            html += `</table><div class='result'>Expected Length: ${expectedLength.toFixed(4)} ${isTernary ? 'ternary digits' : 'bits'}</div>`;
+            return html;
+        }
+
+        function showResult(content) {
+            document.getElementById('errorMessage').textContent = '';
+            document.getElementById('results').innerHTML = content;
+        }
+
+        // Calculation Functions
+        function calculateEntropy() {
+            const P = parseInput('sourceDist');
+            if (!P) return;
+
+            try {
+                const { result, steps } = InformationTheory.entropy(P);
+                showResult(`
+            <div class='result'><strong>Entropy:</strong> ${result.toFixed(4)} bits</div>
+            <button class='toggle-steps' onclick="toggleSteps('entropy-steps')">Show/Hide Steps</button>
+            <div class='steps' id='entropy-steps'>${steps.join('<div class="step">')}</div>
+        `);
+            } catch (e) {
+                showError(e.message);
+            }
+        }
+
+        function calculateBinaryHuffman() {
+            const P = parseInput('sourceDist');
+            if (!P) return;
+
+            try {
+                const { codes, expectedLength, steps } = InformationTheory.huffmanCode(P);
+                const table = createCodeTable(codes, expectedLength);
+                showResult(`
+            <div class='result'>${table}</div>
+            <button class='toggle-steps' onclick="toggleSteps('huffman-steps')">Show/Hide Steps</button>
+            <div class='steps' id='huffman-steps'>${steps.join('<div class="step">')}</div>
+        `);
+            } catch (e) {
+                showError(e.message);
+            }
+        }
+
+    function calculateTernaryHuffman() {
+        const P = parseInput('sourceDist');
+        if (!P) return;
+
+        try {
+            const { codes, expectedLength, steps } = InformationTheory.ternaryHuffman(P);
+            const table = createCodeTable(codes, expectedLength, true);
+            showResult(`
+            <div class='result'>${table}</div>
+            <button class='toggle-steps' onclick="toggleSteps('ternary-huffman-steps')">Show/Hide Steps</button>
+            <div class='steps' id='ternary-huffman-steps'>${steps.map(step => `<div class="step">${step}</div>`).join('')}</div>
+        `);
+        } catch (e) {
+            showError(e.message);
+        }
     }
+        function calculateTernaryShannonFano() {
+            const P = parseInput('sourceDist');
+            if (!P) return;
 
-    split(sorted, '');
-    const expectedLength = probabilities.reduce((sum, p) => sum + p * codes[p].length, 0);
-    return {codes, expectedLength};
-}
+            try {
+                const { codes, expectedLength, steps } = InformationTheory.shannonFanoTernary(P);
+                const table = createCodeTable(codes, expectedLength, true);
+                showResult(`
+            <div class='result'>${table}</div>
+            <button class='toggle-steps' onclick="toggleSteps('shannon-fano-steps')">Show/Hide Steps</button>
+            <div class='steps' id='shannon-fano-steps'>${steps.join('<div class="step">')}</div>
+        `);
+            } catch (e) {
+                showError(e.message);
+            }
+        }
 
-    static gilbertMoore(probabilities) {
-        this.validateProbabilities(probabilities);
-        const sorted = [...probabilities].sort((a, b) => b - a);
-        const codes = {};
-        let cumulative = 0;
+        function calculateGilbertMoore() {
+            const P = parseInput('sourceDist');
+            if (!P) return;
 
-        sorted.forEach(p => {
-            const length = Math.ceil(-Math.log2(p)) + 1;
-            const binary = (cumulative * (2 ** length)).toString(2).slice(0, length);
-            codes[p] = binary.padStart(length, '0');
-            cumulative += p;
-        });
+            try {
+                const { codes, expectedLength, steps } = InformationTheory.gilbertMoore(P);
+                const table = createCodeTable(codes, expectedLength);
+                showResult(`
+            <div class='result'>${table}</div>
+            <button class='toggle-steps' onclick="toggleSteps('gilbert-moore-steps')">Show/Hide Steps</button>
+            <div class='steps' id='gilbert-moore-steps'>${steps.join('<div class="step">')}</div>
+        `);
+            } catch (e) {
+                showError(e.message);
+            }
+        }
 
-        const expectedLength = probabilities.reduce((sum, p) => sum + p * codes[p].length, 0);
-        return {codes, expectedLength};
-    }
+        function calculateJointEntropy() {
+            const matrix = parseInput('jointMatrix');
+            if (!matrix) return;
 
-    static jointEntropy(matrix) {
-        const flat = matrix.flat();
-        this.validateProbabilities(flat);
-        return flat.reduce((sum, p) => p > 0 ? sum - p * Math.log2(p) : sum, 0);
-    }
+            try {
+                const { result, steps } = InformationTheory.jointEntropy(matrix);
+                showResult(`
+            <div class='result'><strong>Joint Entropy:</strong> ${result.toFixed(4)} bits</div>
+            <button class='toggle-steps' onclick="toggleSteps('joint-entropy-steps')">Show/Hide Steps</button>
+            <div class='steps' id='joint-entropy-steps'>${steps.join('<div class="step">')}</div>
+        `);
+            } catch (e) {
+                showError(e.message);
+            }
+        }
 
-    static marginalEntropies(matrix) {
-        const px = matrix.map(row => row.reduce((a, b) => a + b));
-        const py = matrix[0].map((_, i) => matrix.reduce((a, row) => a + row[i], 0));
-        return {
-            Hx: this.entropy(px),
-            Hy: this.entropy(py)
-        };
-    }
+        function calculateMarginalEntropies() {
+            const matrix = parseInput('jointMatrix');
+            if (!matrix) return;
 
-    static conditionalEntropies(matrix) {
-        const px = matrix.map(row => row.reduce((a, b) => a + b));
-        const py = matrix[0].map((_, i) => matrix.reduce((a, row) => a + row[i], 0));
-        
-        const Hyx = matrix.reduce((sum, row, i) => {
-            const rowSum = px[i];
-            return sum + rowSum * this.entropy(row.map(p => p / rowSum));
-        }, 0);
+            try {
+                const { Hx, Hy, steps } = InformationTheory.marginalEntropies(matrix);
+                showResult(`
+            <div class='result'>
+                <strong>Marginal Entropy H(X):</strong> ${Hx.toFixed(4)} bits<br>
+                <strong>Marginal Entropy H(Y):</strong> ${Hy.toFixed(4)} bits
+            </div>
+            <button class='toggle-steps' onclick="toggleSteps('marginal-entropy-steps')">Show/Hide Steps</button>
+            <div class='steps' id='marginal-entropy-steps'>${steps.join('<div class="step">')}</div>
+        `);
+            } catch (e) {
+                showError(e.message);
+            }
+        }
 
-        const Hxy = matrix[0].map((_, j) => {
-            const col = matrix.map(row => row[j]);
-            const colSum = py[j];
-            return colSum * this.entropy(col.map(p => p / colSum));
-        }).reduce((a, b) => a + b, 0);
+        function calculateConditionalEntropies() {
+            const matrix = parseInput('jointMatrix');
+            if (!matrix) return;
 
-        return {Hyx, Hxy};
-    }
+            try {
+                const { Hyx, Hxy, steps } = InformationTheory.conditionalEntropies(matrix);
+                showResult(`
+            <div class='result'>
+                <strong>Conditional Entropy H(Y|X):</strong> ${Hyx.toFixed(4)} bits<br>
+                <strong>Conditional Entropy H(X|Y):</strong> ${Hxy.toFixed(4)} bits
+            </div>
+            <button class='toggle-steps' onclick="toggleSteps('conditional-entropy-steps')">Show/Hide Steps</button>
+            <div class='steps' id='conditional-entropy-steps'>${steps.join('<div class="step">')}</div>
+        `);
+            } catch (e) {
+                showError(e.message);
+            }
+        }
 
-    static mutualInformation(matrix) {
-        const {Hx, Hy} = this.marginalEntropies(matrix);
-        const Hxy = this.jointEntropy(matrix);
-        return Hx + Hy - Hxy;
-    }
-}
+        function calculateMutualInformation() {
+            const matrix = parseInput('jointMatrix');
+            if (!matrix) return;
 
-function showError(message) {
-    document.getElementById('errorMessage').textContent = message;
-}
-
-function parseInput(id) {
-    try {
-        const input = document.getElementById(id).value;
-        return JSON.parse(input);
-    } catch (e) {
-        showError(`Invalid ${id} format`);
-        return null;
-    }
-}
-
-function calculateEntropy() {
-    const P = parseInput('sourceDist');
-    if (!P) return;
-    
-    try {
-        const result = InformationTheory.entropy(P);
-        showResult(`Entropy: ${result.toFixed(4)} bits`);
-    } catch (e) {
-        showError(e.message);
-    }
-}
-
-function calculateBinaryHuffman() {
-    const P = parseInput('sourceDist');
-    if (!P) return;
-    
-    try {
-        const {codes, expectedLength} = InformationTheory.huffmanCode(P);
-        const table = createCodeTable(codes, expectedLength);
-        showResult(`Binary Huffman Code:<br>${table}`);
-    } catch (e) {
-        showError(e.message);
-    }
-}
-
-function calculateTernaryHuffman() {
-    const P = parseInput('sourceDist');
-    if (!P) return;
-    
-    try {
-        const {codes, expectedLength} = InformationTheory.ternaryHuffman(P);
-        const table = createCodeTable(codes, expectedLength);
-        showResult(`Ternary Huffman Code:<br>${table}`);
-    } catch (e) {
-        showError(e.message);
-    }
-}
-
-function calculateTernaryShannonFano() {
-    const P = parseInput('sourceDist');
-    if (!P) return;
-    
-    try {
-        const {codes, expectedLength} = InformationTheory.shannonFanoTernary(P);
-        const table = createCodeTable(codes, expectedLength);
-        showResult(`Ternary Shannon-Fano Code:<br>${table}`);
-    } catch (e) {
-        showError(e.message);
-    }
-}
-
-function calculateGilbertMoore() {
-    const P = parseInput('sourceDist');
-    if (!P) return;
-    
-    try {
-        const {codes, expectedLength} = InformationTheory.gilbertMoore(P);
-        const table = createCodeTable(codes, expectedLength);
-        showResult(`Gilbert-Moore Code:<br>${table}`);
-    } catch (e) {
-        showError(e.message);
-    }
-}
-
-function calculateJointEntropy() {
-    const matrix = parseInput('jointMatrix');
-    if (!matrix) return;
-    
-    try {
-        const result = InformationTheory.jointEntropy(matrix);
-        showResult(`Joint Entropy: ${result.toFixed(4)} bits`);
-    } catch (e) {
-        showError(e.message);
-    }
-}
-
-function calculateMarginalEntropies() {
-    const matrix = parseInput('jointMatrix');
-    if (!matrix) return;
-    
-    try {
-        const {Hx, Hy} = InformationTheory.marginalEntropies(matrix);
-        showResult(`H(X): ${Hx.toFixed(4)} bits<br>H(Y): ${Hy.toFixed(4)} bits`);
-    } catch (e) {
-        showError(e.message);
-    }
-}
-
-function calculateConditionalEntropies() {
-    const matrix = parseInput('jointMatrix');
-    if (!matrix) return;
-    
-    try {
-        const {Hyx, Hxy} = InformationTheory.conditionalEntropies(matrix);
-        showResult(`H(Y|X): ${Hyx.toFixed(4)} bits<br>H(X|Y): ${Hxy.toFixed(4)} bits`);
-    } catch (e) {
-        showError(e.message);
-    }
-}
-
-function calculateMutualInformation() {
-    const matrix = parseInput('jointMatrix');
-    if (!matrix) return;
-    
-    try {
-        const result = InformationTheory.mutualInformation(matrix);
-        showResult(`Mutual Information: ${result.toFixed(4)} bits`);
-    } catch (e) {
-        showError(e.message);
-    }
-}
-
-function createCodeTable(codes, expectedLength) {
-    let html = '<table><tr><th>Probability</th><th>Code</th><th>Length</th></tr>';
-    for (const p in codes) {
-        html += `<tr><td>${p}</td><td>${codes[p]}</td><td>${codes[p].length}</td></tr>`;
-    }
-    html += `</table><div>Expected Length: ${expectedLength.toFixed(4)} bits</div>`;
-    return html;
-}
-
-function showResult(content) {
-    document.getElementById('errorMessage').textContent = '';
-    document.getElementById('results').innerHTML = content;
-}
-</script>
+            try {
+                const { result, steps } = InformationTheory.mutualInformation(matrix);
+                showResult(`
+            <div class='result'><strong>Mutual Information:</strong> ${result.toFixed(4)} bits</div>
+            <button class='toggle-steps' onclick="toggleSteps('mutual-info-steps')">Show/Hide Steps</button>
+            <div class='steps' id='mutual-info-steps'>${steps.join('<div class="step">')}</div>
+        `);
+            } catch (e) {
+                showError(e.message);
+            }
+        }
+    </script>
 </body>
+
 </html>
